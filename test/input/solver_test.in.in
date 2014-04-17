@@ -18,7 +18,7 @@ neutral_species = 'N2 CH4 H H2'
 #                  C2H3CN CH2NH CHCN CH3CN H2C3N HC5N C2N2 HC2N2 C4N2
 #                  [15]N HC[15]N H2C[15]N C[15]N [15]NH'
 
-ionic_species = 'N2+ CH4+'
+ionic_species = 'N2+ CH4+ e'
 
 temperature_file = '@abs_top_srcdir@/test/input/temperature.dat'
 file_flyby = '@abs_top_srcdir@/test/input/T40_Flyby'
@@ -76,7 +76,10 @@ max_linear_iterations = 2500
 
 verify_analytic_jacobians = 0.0
 
-initial_linear_tolerance = 1.0e-10
+initial_linear_tolerance = 1.0e-6
+minimal_linear_tolerance = 1.0e-6
+
+relative_residual_tolerance = 1e-4
 
 use_numerical_jacobians_only = 'true'
 
