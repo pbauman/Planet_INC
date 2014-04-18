@@ -18,7 +18,9 @@ neutral_species = 'N2 CH4 H H2'
 #                  C2H3CN CH2NH CHCN CH3CN H2C3N HC5N C2N2 HC2N2 C4N2
 #                  [15]N HC[15]N H2C[15]N C[15]N [15]NH'
 
-ionic_species = 'N2+ CH4+ e'
+# We want a simple case, adds too much troubles, we need
+# a much bigger system
+#ionic_species = 'N2+ CH4+ e'
 
 temperature_file = '@abs_top_srcdir@/test/input/temperature.dat'
 file_flyby = '@abs_top_srcdir@/test/input/T40_Flyby'
@@ -30,7 +32,7 @@ input_hv = '@abs_top_srcdir@/test/input/hv_SSI.dat'
 input_reactions_elem = '@abs_top_srcdir@/test/input/neutral_reactions.bimol'
 input_reactions_fall = '@abs_top_srcdir@/test/input/neutral_reactions.falloff'
 input_reactions_fall = '@abs_top_srcdir@/test/input/neutral_reactions.falloff'
-input_ions_reactions = '@abs_top_srcdir@/test/input/ionospheric_reactions.inp'
+#input_ions_reactions = '@abs_top_srcdir@/test/input/ionospheric_reactions.inp'
 
 zmin = '600.0'
 zmax = '1400.0'
