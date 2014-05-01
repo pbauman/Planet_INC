@@ -201,13 +201,14 @@ void read_photochemistry_reac(const std::string &hv_file, const std::string &rea
    datas.resize(nbr - 1);
    while(!data.eof())
    {
-      Scalar lambda, total;
+      Scalar lambda(-1), total;
       std::vector<Scalar> sigmas;
       sigmas.resize(nbr - 2,0.L);
       data >> lambda >> total;
-      for(unsigned int ibr = 0; ibr < nbr - 2; ibr++)data >> sigmas[ibr];
+      if(lambda < 0.)break;
+      for(unsigned int ibr = 0; ibr < nbr - 2; ibr++)data >> sigmas[ibr]; //only br here
       datas[0].push_back(lambda);
-      for(unsigned int ibr = 0; ibr < nbr - 2; ibr++)datas[ibr].push_back(sigmas[ibr]);
+      for(unsigned int ibr = 0; ibr < nbr - 2; ibr++)datas[ibr + 1].push_back(sigmas[ibr]);// + \lambda
    }
    data.close();
 
@@ -231,11 +232,27 @@ void read_photochemistry_reac(const std::string &hv_file, const std::string &rea
         reaction2->add_product( produc[ibr][ip],chem_mixture.active_species_name_map().find(produc[ibr][ip])->second,stoi_prod[ibr][ip]);
      }
 
-     std::vector<Scalar> dataf = datas[0];
-     for(unsigned int i = 0; i < datas[ibr].size(); i++)
+     std::vector<Scalar> dataf;
+     dataf.resize(datas[0].size() + datas[ibr].size(),0.);
+     int istep(1);
+     int start(0);
+     if(datas[0].back() < datas[0].front())
      {
-        dataf.push_back(datas[ibr][i]);
+       istep = -1;
+       start = datas[0].size() - 1;
      }
+     unsigned int j(0);
+     for(int i = start; i < (int)datas[0].size() && i > -1; i += istep)
+     {
+       dataf[j] = datas[ibr + 1][i];
+       j++;
+     }
+     for(int i = start; i < (int)datas[0].size() && i > -1; i += istep)
+     {
+       dataf[j] = datas[0][i];
+       j++;
+     }
+
      Antioch::KineticsType<Scalar, std::vector<Scalar> > * rate  = Antioch::build_rate<Scalar,std::vector<Scalar> >(dataf,kineticsModel); //kinetics rate
      Antioch::KineticsType<Scalar, std::vector<Scalar> > * rate2 = Antioch::build_rate<Scalar,std::vector<Scalar> >(dataf,kineticsModel); //kinetics rate
      reaction->add_forward_rate(rate);
@@ -458,8 +475,9 @@ void read_temperature(VectorScalar &T0, VectorScalar &Tz, const std::string &fil
   getline(temp,line);
   while(!temp.eof())
   {
-     Scalar t,tz,dt,dtz;
+     Scalar t(-1.),tz,dt,dtz;
      temp >> t >> tz >> dt >> dtz;
+     if(t < 0.)break;
      T0.push_back(t);
      Tz.push_back(tz);
   }
@@ -480,14 +498,30 @@ void read_hv_flux(VectorScalar &lambda, VectorScalar &phy1AU, const std::string 
   getline(flux_1AU,line);
   while(!flux_1AU.eof())
   {
-     Scalar wv,ir,dirr;
+     Scalar wv(-1.),ir,dirr;
      flux_1AU >> wv >> ir >> dirr;
-     if(!lambda.empty() && wv == lambda.back())continue;
+     if(wv < 0.)break;
      lambda.push_back(wv);//A * 10.L);//nm -> A
      phy1AU.push_back(ir);// * 1e3L * (wv*1e-9L) / (Antioch::Constants::Planck_constant<Scalar>() * 
                             //            Antioch::Constants::light_celerity<Scalar>()));//W/m2/nm -> J/s/cm2/A -> s-1/cm-2/A
   }
   flux_1AU.close();
+
+  if(lambda.back() < lambda.front())
+  {
+      VectorScalar tmp_l(lambda.size());
+      VectorScalar tmp_p(phy1AU.size());
+      for(unsigned int i = 0; i < lambda.size(); i++)
+      {
+         tmp_l[lambda.size() - 1 - i] = lambda[i];
+         tmp_p[lambda.size() - 1 - i] = phy1AU[i];
+      }
+      lambda.clear();
+      phy1AU.clear();
+      lambda = tmp_l;
+      phy1AU = tmp_p;
+  }
+
   return;
 }
 
@@ -504,9 +538,10 @@ void read_crossSection(const std::string &file, VectorScalar &lambda, VectorScal
   getline(sig_f,line);
   while(!sig_f.eof())
   {
-     Scalar wv,sigt;
+     Scalar wv(-1.),sigt;
      sig_f >> wv >> sigt;
      if(!getline(sig_f,line))break;
+     if(wv < 0.)break;
      lambda.push_back(wv);//A
      sigma.push_back(sigt);//cm-2/A
   }
@@ -681,6 +716,7 @@ void compute_diffusion(const Scalar &K, const VectorScalar &densities,
 template <typename Scalar>
 int tester(const std::string &input_T,const std::string & input_hv, 
            const std::string &input_reactions_elem, const std::string &input_reactions_fall, 
+           const std::string &input_reactions_photochem_N2, const std::string &input_reactions_photochem_CH4, 
            const std::string &input_N2,const std::string &input_CH4, const std::string& input_filename )
 {
 
@@ -882,7 +918,7 @@ int tester(const std::string &input_T,const std::string & input_hv,
   Antioch::ReactionSet<Scalar> neut_reac_theo(neutral_species);
 
   fill_neutral_reactions<Scalar,std::vector<Scalar> >
-                (input_reactions_elem,input_reactions_fall,input_N2,input_CH4,neutral_reaction_set,neut_reac_theo); //here only simple ones
+                (input_reactions_elem,input_reactions_fall,input_reactions_photochem_N2,input_reactions_photochem_CH4,neutral_reaction_set,neut_reac_theo); //here only simple ones
 
 //atmospheric mixture
   Planet::AtmosphericMixture<Scalar,std::vector<Scalar>, std::vector<std::vector<Scalar> > > composition(neutral_species, ionic_species, temperature);
@@ -938,7 +974,7 @@ int tester(const std::string &input_T,const std::string & input_hv,
   int return_flag(0);
   const Scalar nTot_virtual(dens_tot);
 
-  for(Scalar z = zmax; z >= zmin; z -= zstep)
+  for(Scalar z = zmax; z >= zmax; z -= zstep)
   {
 
      Scalar T        = temperature.neutral_temperature(z);
@@ -1011,14 +1047,14 @@ int tester(const std::string &input_T,const std::string & input_hv,
 int main(int argc, char** argv)
 {
   // Check command line count.
-  if( argc < 8 )
+  if( argc < 10 )
     {
       // TODO: Need more consistent error handling.
       std::cerr << "Error: Must specify input files." << std::endl;
       antioch_error();
     }
 
-  return (tester<float>(std::string(argv[1]),std::string(argv[2]),std::string(argv[3]),std::string(argv[4]),std::string(argv[5]),std::string(argv[6]),std::string(argv[7])) ||
-          tester<double>(std::string(argv[1]),std::string(argv[2]),std::string(argv[3]),std::string(argv[4]),std::string(argv[5]),std::string(argv[6]),std::string(argv[7])));//||
+  return (tester<float>(std::string(argv[1]),std::string(argv[2]),std::string(argv[3]),std::string(argv[4]),std::string(argv[5]),std::string(argv[6]),std::string(argv[7]),std::string(argv[8]),std::string(argv[9])) ||
+          tester<double>(std::string(argv[1]),std::string(argv[2]),std::string(argv[3]),std::string(argv[4]),std::string(argv[5]),std::string(argv[6]),std::string(argv[7]),std::string(argv[8]),std::string(argv[9])));//||
           //tester<long double>(std::string(argv[1])));
 }
