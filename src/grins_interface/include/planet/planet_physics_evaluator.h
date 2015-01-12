@@ -128,7 +128,7 @@ namespace Planet
       _photon(helper.tau(),_composition),
       _molecular_diffusion(helper.bin_diff_coeff(),_composition,helper.temperature()),
       _eddy_diffusion(_composition,helper.K0()),
-      _kinetics(_neutral_kinetics,_ionic_kinetics,helper.temperature(),_photon,_composition),
+      _kinetics(_neutral_kinetics,_ionic_kinetics,helper.temperature(),_photon,_composition, helper.ss_species()),
       _diffusion(_molecular_diffusion,_eddy_diffusion,_composition,helper.temperature()),
       _scaling_factor(helper.scaling_factor())
   {
@@ -177,6 +177,7 @@ namespace Planet
       molar[i]  = molar_concentrations[i]     * _scaling_factor;
       dmolar[i] = dmolar_concentrations_dz[i] * _scaling_factor;
    }
+
    _diffusion.diffusion_and_derivs(molar,dmolar,z,_omegas_A_term,_omegas_B_term,_domegas_dn_A_TERM,_domegas_dn_B_TERM);
    _kinetics.chemical_rate_and_derivs(molar,this->get_cache(z),z,_omegas_dots,_domegas_dots_dn);
 

@@ -49,6 +49,7 @@ include_HEADERS += absorption/include/planet/cross_section.h
 
 # kinetics
 include_HEADERS += kinetics/include/planet/atmospheric_kinetics.h
+include_HEADERS += kinetics/include/planet/atmospheric_steady_state.h
 
 # grins_interface
 include_HEADERS += grins_interface/include/planet/planet_physics.h
@@ -56,6 +57,23 @@ include_HEADERS += grins_interface/include/planet/planet_physics_helper.h
 include_HEADERS += grins_interface/include/planet/planet_physics_evaluator.h
 include_HEADERS += grins_interface/include/planet/physics_factory.h
 include_HEADERS += grins_interface/include/planet/physics_names.h
+
+# queso interface
+include_HEADERS += pdf_management/include/planet/kinetics_branching_structure.h
+include_HEADERS += pdf_management/include/planet/branching_ratio_node.h
+include_HEADERS += pdf_management/include/planet/pdf_enum.h
+include_HEADERS += pdf_management/include/planet/base_pdf.h
+include_HEADERS += pdf_management/include/planet/unif_pdf.h
+include_HEADERS += pdf_management/include/planet/norm_pdf.h
+include_HEADERS += pdf_management/include/planet/nort_pdf.h
+include_HEADERS += pdf_management/include/planet/logn_pdf.h
+include_HEADERS += pdf_management/include/planet/logu_pdf.h
+include_HEADERS += pdf_management/include/planet/diri_pdf.h
+include_HEADERS += pdf_management/include/planet/dirg_pdf.h
+include_HEADERS += pdf_management/include/planet/diut_pdf.h
+include_HEADERS += pdf_management/include/planet/diun_pdf.h
+include_HEADERS += pdf_management/include/planet/dior_pdf.h
+include_HEADERS += pdf_management/include/planet/pdf_management.h
 
 # temperature
 include_HEADERS += temperature/include/planet/atmospheric_temperature.h
@@ -100,7 +118,7 @@ AM_CPPFLAGS += -I$(top_srcdir)/src/grins_interface/include
 AM_CPPFLAGS += -I$(top_srcdir)/src/kinetics/include
 AM_CPPFLAGS += -I$(top_srcdir)/src/temperature/include
 AM_CPPFLAGS += -I$(top_srcdir)/src/absorption/include
-AM_CPPFLAGS += -I$(top_srcdir)/src/sampling/include
+AM_CPPFLAGS += -I$(top_srcdir)/src/pdf_management/include
 AM_CPPFLAGS += -I$(top_srcdir)/src/diffusion/include
 AM_CPPFLAGS += -I$(top_srcdir)/src/utilities/include
 AM_CPPFLAGS += -I$(top_builddir)/src/utilities/include #planet_version.h

@@ -125,7 +125,9 @@ elif (test x$enablecxx11 = xoptional); then
   AX_CXX_AUTO_THIS(optional)
 fi
 
+AX_PATH_GRINS(0.4.0,yes)
 CONFIGURE_EIGEN(2.3.0,yes)
+AX_PATH_GRINS(0.4.0,yes)
 
 dnl--------------------------
 dnl Checks for code coverage
@@ -168,6 +170,7 @@ AC_CONFIG_FILES(test/molecular_diffusion_evaluator_unit.sh,   [chmod +x test/mol
 AC_CONFIG_FILES(test/diffusion_evaluator_unit.sh,             [chmod +x test/diffusion_evaluator_unit.sh])
 AC_CONFIG_FILES(test/physics_helper_unit.sh,                  [chmod +x test/physics_helper_unit.sh])
 AC_CONFIG_FILES(test/solver_test.sh,                          [chmod +x test/solver_test.sh])
+AC_CONFIG_FILES(test/ionospheric_test.sh,                     [chmod +x test/ionospheric_test.sh])
 
 AC_CONFIG_FILES(test/input/solver_test.in)
 AC_CONFIG_FILES(test/input/grins_input_physics_helper.in)
